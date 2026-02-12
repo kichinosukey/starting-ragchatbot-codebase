@@ -155,6 +155,74 @@ Current tools: `CourseSearchTool` (semantic search with course/lesson filters)
 - Course name not found: "No course found matching '...'"
 - ChromaDB errors caught and returned as `SearchResults.empty(error_msg)`
 
+## Code Quality Tools
+
+### Black Formatter
+
+This project uses Black for automatic Python code formatting with the following configuration:
+
+**Settings (`pyproject.toml`):**
+- Line length: 88 characters (Black's default)
+- Target version: Python 3.13
+- Excluded directories: `.eggs`, `.git`, `.mypy_cache`, `.venv`, `venv`, `chroma_db`, `__pycache__`
+
+**Usage:**
+- `./format.sh check` - Check formatting without making changes
+- `./format.sh format` - Apply Black formatting to all Python files
+- `./format.sh diff` - Show detailed diff of formatting changes
+
+All Python files in `backend/` and `main.py` are formatted with Black.
+
+### Pre-commit Hooks
+
+Pre-commit hooks run automatically before each `git commit`:
+
+**Configured hooks (`.pre-commit-config.yaml`):**
+1. **Black formatter** - Ensures all Python code follows formatting standards
+2. **Trailing whitespace** - Removes trailing whitespace (excludes .md files)
+3. **End-of-file fixer** - Ensures files end with a newline
+4. **YAML validation** - Checks YAML files for syntax errors
+5. **Large file check** - Prevents accidentally committing large files
+6. **Merge conflict detection** - Detects unresolved merge conflict markers
+
+**Installation:**
+```bash
+uv run pre-commit install
+```
+
+Once installed, hooks run automatically on `git commit`. To bypass hooks (use sparingly):
+```bash
+git commit --no-verify
+```
+
+### Quality Gate Script
+
+`./quality-check.sh` runs comprehensive checks for CI/CD or pre-push validation:
+
+1. Black formatting check (fails if not formatted)
+2. Pytest test suite
+
+This ensures code quality before merging or deploying.
+
+### Development Workflow
+
+**Before committing:**
+1. Pre-commit hooks automatically format code and run checks
+2. If hooks fail, fix issues and re-stage files
+3. Commit proceeds once all hooks pass
+
+**Manual formatting (if needed):**
+```bash
+./format.sh format
+git add -u
+git commit -m "Your message"
+```
+
+**Pre-push validation:**
+```bash
+./quality-check.sh  # Ensures formatting + tests pass
+```
+
 ## Key Files to Understand
 
 When modifying behavior, these are the critical files:

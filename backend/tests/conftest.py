@@ -1,4 +1,5 @@
 """Shared test fixtures for the RAG chatbot test suite."""
+
 import sys
 from pathlib import Path
 
@@ -24,19 +25,19 @@ def sample_course():
             Lesson(
                 lesson_number=0,
                 title="What is RAG?",
-                link="https://example.com/rag-course/lesson-0"
+                link="https://example.com/rag-course/lesson-0",
             ),
             Lesson(
                 lesson_number=1,
                 title="Vector Embeddings",
-                link="https://example.com/rag-course/lesson-1"
+                link="https://example.com/rag-course/lesson-1",
             ),
             Lesson(
                 lesson_number=2,
                 title="Semantic Search",
-                link="https://example.com/rag-course/lesson-2"
-            )
-        ]
+                link="https://example.com/rag-course/lesson-2",
+            ),
+        ],
     )
 
 
@@ -47,7 +48,7 @@ def sample_search_results():
         documents=[
             "RAG stands for Retrieval-Augmented Generation. It combines information retrieval with text generation.",
             "Vector embeddings are numerical representations of text that capture semantic meaning.",
-            "Semantic search finds results based on meaning rather than exact keyword matches."
+            "Semantic search finds results based on meaning rather than exact keyword matches.",
         ],
         metadata=[
             {
@@ -55,24 +56,24 @@ def sample_search_results():
                 "lesson_number": 0,
                 "lesson_title": "What is RAG?",
                 "course_link": "https://example.com/rag-course",
-                "lesson_link": "https://example.com/rag-course/lesson-0"
+                "lesson_link": "https://example.com/rag-course/lesson-0",
             },
             {
                 "course_title": "Introduction to RAG Systems",
                 "lesson_number": 1,
                 "lesson_title": "Vector Embeddings",
                 "course_link": "https://example.com/rag-course",
-                "lesson_link": "https://example.com/rag-course/lesson-1"
+                "lesson_link": "https://example.com/rag-course/lesson-1",
             },
             {
                 "course_title": "Introduction to RAG Systems",
                 "lesson_number": 2,
                 "lesson_title": "Semantic Search",
                 "course_link": "https://example.com/rag-course",
-                "lesson_link": "https://example.com/rag-course/lesson-2"
-            }
+                "lesson_link": "https://example.com/rag-course/lesson-2",
+            },
         ],
-        distances=[0.1, 0.2, 0.3]
+        distances=[0.1, 0.2, 0.3],
     )
 
 
@@ -86,7 +87,7 @@ def sample_sources():
             lesson_title="What is RAG?",
             course_link="https://example.com/rag-course",
             lesson_link="https://example.com/rag-course/lesson-0",
-            citation_number=1
+            citation_number=1,
         ),
         Source(
             course_title="Introduction to RAG Systems",
@@ -94,8 +95,8 @@ def sample_sources():
             lesson_title="Vector Embeddings",
             course_link="https://example.com/rag-course",
             lesson_link="https://example.com/rag-course/lesson-1",
-            citation_number=2
-        )
+            citation_number=2,
+        ),
     ]
 
 
@@ -108,7 +109,7 @@ def mock_vector_store():
     mock.search.return_value = SearchResults(
         documents=[
             "RAG stands for Retrieval-Augmented Generation.",
-            "It combines retrieval with generation."
+            "It combines retrieval with generation.",
         ],
         metadata=[
             {
@@ -116,17 +117,17 @@ def mock_vector_store():
                 "lesson_number": 0,
                 "lesson_title": "What is RAG?",
                 "course_link": "https://example.com/rag-course",
-                "lesson_link": "https://example.com/rag-course/lesson-0"
+                "lesson_link": "https://example.com/rag-course/lesson-0",
             },
             {
                 "course_title": "Introduction to RAG Systems",
                 "lesson_number": 1,
                 "lesson_title": "Vector Embeddings",
                 "course_link": "https://example.com/rag-course",
-                "lesson_link": "https://example.com/rag-course/lesson-1"
-            }
+                "lesson_link": "https://example.com/rag-course/lesson-1",
+            },
         ],
-        distances=[0.1, 0.2]
+        distances=[0.1, 0.2],
     )
 
     # Mock get_all_courses method
@@ -139,14 +140,14 @@ def mock_vector_store():
                 Lesson(
                     lesson_number=0,
                     title="What is RAG?",
-                    lesson_link="https://example.com/rag-course/lesson-0"
+                    lesson_link="https://example.com/rag-course/lesson-0",
                 ),
                 Lesson(
                     lesson_number=1,
                     title="Vector Embeddings",
-                    lesson_link="https://example.com/rag-course/lesson-1"
-                )
-            ]
+                    lesson_link="https://example.com/rag-course/lesson-1",
+                ),
+            ],
         )
     ]
 
@@ -162,11 +163,13 @@ def mock_vector_store():
     # Mock course_catalog for CourseOutlineTool
     mock_catalog = MagicMock()
     mock_catalog.get.return_value = {
-        'metadatas': [{
-            'course_link': 'https://example.com/rag-course',
-            'instructor': 'Dr. Jane Smith',
-            'lessons_json': '[{"lesson_number": 0, "lesson_title": "What is RAG?", "lesson_link": "https://example.com/rag-course/lesson-0"}, {"lesson_number": 1, "lesson_title": "Vector Embeddings", "lesson_link": "https://example.com/rag-course/lesson-1"}]'
-        }]
+        "metadatas": [
+            {
+                "course_link": "https://example.com/rag-course",
+                "instructor": "Dr. Jane Smith",
+                "lessons_json": '[{"lesson_number": 0, "lesson_title": "What is RAG?", "lesson_link": "https://example.com/rag-course/lesson-0"}, {"lesson_number": 1, "lesson_title": "Vector Embeddings", "lesson_link": "https://example.com/rag-course/lesson-1"}]',
+            }
+        ]
     }
     mock.course_catalog = mock_catalog
 
@@ -198,7 +201,10 @@ def mock_anthropic_client():
     # Mock final response after tool use
     final_response = MagicMock()
     final_response.content = [
-        MagicMock(type="text", text="Based on the search results, RAG stands for Retrieval-Augmented Generation.")
+        MagicMock(
+            type="text",
+            text="Based on the search results, RAG stands for Retrieval-Augmented Generation.",
+        )
     ]
     final_response.stop_reason = "end_turn"
 
@@ -226,18 +232,15 @@ def mock_rag_system():
                 lesson_title="What is RAG?",
                 course_link="https://example.com/rag-course",
                 lesson_link="https://example.com/rag-course/lesson-0",
-                citation_number=1
+                citation_number=1,
             )
-        ]
+        ],
     )
 
     # Mock get_course_analytics method
     mock.get_course_analytics.return_value = {
         "total_courses": 2,
-        "course_titles": [
-            "Introduction to RAG Systems",
-            "Advanced AI Techniques"
-        ]
+        "course_titles": ["Introduction to RAG Systems", "Advanced AI Techniques"],
     }
 
     # Mock add_course_folder method
@@ -284,7 +287,9 @@ def test_app(mock_rag_system):
     @app.post("/api/query", response_model=QueryResponse)
     async def query_documents(request: QueryRequest):
         try:
-            session_id = request.session_id or mock_rag_system.session_manager.create_session()
+            session_id = (
+                request.session_id or mock_rag_system.session_manager.create_session()
+            )
             answer, sources = mock_rag_system.query(request.query, session_id)
             return QueryResponse(answer=answer, sources=sources, session_id=session_id)
         except Exception as e:
@@ -296,7 +301,7 @@ def test_app(mock_rag_system):
             analytics = mock_rag_system.get_course_analytics()
             return CourseStats(
                 total_courses=analytics["total_courses"],
-                course_titles=analytics["course_titles"]
+                course_titles=analytics["course_titles"],
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))

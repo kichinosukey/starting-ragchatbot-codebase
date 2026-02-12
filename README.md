@@ -54,3 +54,53 @@ The application will be available at:
 - Web Interface: `http://localhost:8000`
 - API Documentation: `http://localhost:8000/docs`
 
+## Development Workflow
+
+### Code Formatting
+
+This project uses [Black](https://black.readthedocs.io/) for consistent Python code formatting with a line length of 88 characters.
+
+**Check formatting:**
+```bash
+./format.sh check
+```
+
+**Apply formatting:**
+```bash
+./format.sh format
+```
+
+**Show formatting diff:**
+```bash
+./format.sh diff
+```
+
+### Pre-commit Hooks
+
+Pre-commit hooks are configured to automatically format code and run checks before each commit:
+
+**Install hooks** (one-time setup):
+```bash
+uv run pre-commit install
+```
+
+Once installed, the hooks will automatically run on `git commit` and:
+- Format Python code with Black
+- Remove trailing whitespace
+- Fix end-of-file newlines
+- Validate YAML files
+- Check for large files
+- Detect merge conflicts
+
+### Quality Checks
+
+Run comprehensive quality checks (formatting + tests):
+```bash
+./quality-check.sh
+```
+
+This script:
+1. Checks code formatting with Black
+2. Runs the full test suite with pytest
+
+Use this before pushing code or in CI/CD pipelines.
