@@ -18,4 +18,22 @@ dependencies = [
 dev = [
     "pytest>=9.0.2",
     "pytest-mock>=3.15.1",
+    "black>=24.0.0",
+    "pre-commit>=4.0.0",
 ]
+
+[tool.black]
+line-length = 88
+target-version = ["py313"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  \.eggs
+  | \.git
+  | \.mypy_cache
+  | \.venv
+  | venv
+  | chroma_db
+  | __pycache__
+)/
+'''

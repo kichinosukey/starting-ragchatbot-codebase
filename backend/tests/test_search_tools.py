@@ -1,4 +1,5 @@
 """Tests for search_tools.py (CourseSearchTool and CourseOutlineTool)."""
+
 import pytest
 from unittest.mock import MagicMock, patch
 from search_tools import CourseSearchTool, CourseOutlineTool, ToolManager
@@ -33,7 +34,9 @@ class TestCourseSearchTool:
         assert "[Introduction to RAG Systems" in result  # Course name in header
         mock_vector_store.search.assert_called_once()
 
-    def test_execute_with_course_name_filter(self, mock_vector_store, sample_search_results):
+    def test_execute_with_course_name_filter(
+        self, mock_vector_store, sample_search_results
+    ):
         """Test execute with course_name parameter."""
         mock_vector_store.search.return_value = sample_search_results
         tool = CourseSearchTool(mock_vector_store)
@@ -45,7 +48,9 @@ class TestCourseSearchTool:
         call_args = mock_vector_store.search.call_args
         assert call_args[1]["course_name"] == "RAG Systems"
 
-    def test_execute_with_lesson_number_filter(self, mock_vector_store, sample_search_results):
+    def test_execute_with_lesson_number_filter(
+        self, mock_vector_store, sample_search_results
+    ):
         """Test execute with lesson_number parameter."""
         mock_vector_store.search.return_value = sample_search_results
         tool = CourseSearchTool(mock_vector_store)
@@ -83,7 +88,9 @@ class TestCourseSearchTool:
     def test_execute_with_invalid_course_name(self, mock_vector_store):
         """Test execute when course name cannot be resolved."""
         # VectorStore.search() returns error when course not found
-        mock_vector_store.search.return_value = SearchResults.empty("No course found matching 'Nonexistent Course'")
+        mock_vector_store.search.return_value = SearchResults.empty(
+            "No course found matching 'Nonexistent Course'"
+        )
         tool = CourseSearchTool(mock_vector_store)
 
         result = tool.execute(query="What is RAG?", course_name="Nonexistent Course")
@@ -144,7 +151,9 @@ class TestCourseOutlineTool:
 
     def test_execute_with_valid_course(self, mock_vector_store, sample_course):
         """Test execute with a valid course name."""
-        mock_vector_store._resolve_course_name.return_value = "Introduction to RAG Systems"
+        mock_vector_store._resolve_course_name.return_value = (
+            "Introduction to RAG Systems"
+        )
         tool = CourseOutlineTool(mock_vector_store)
 
         result = tool.execute(course_name="RAG Systems")
@@ -158,7 +167,9 @@ class TestCourseOutlineTool:
 
     def test_execute_with_fuzzy_matching(self, mock_vector_store, sample_course):
         """Test execute with fuzzy course name matching."""
-        mock_vector_store._resolve_course_name.return_value = "Introduction to RAG Systems"
+        mock_vector_store._resolve_course_name.return_value = (
+            "Introduction to RAG Systems"
+        )
         mock_vector_store.get_all_courses.return_value = [sample_course]
         tool = CourseOutlineTool(mock_vector_store)
 
@@ -181,7 +192,7 @@ class TestCourseOutlineTool:
         """Test execute when resolved course has no metadata."""
         mock_vector_store._resolve_course_name.return_value = "Different Course"
         # Mock catalog returns empty metadata
-        mock_vector_store.course_catalog.get.return_value = {'metadatas': []}
+        mock_vector_store.course_catalog.get.return_value = {"metadatas": []}
         tool = CourseOutlineTool(mock_vector_store)
 
         result = tool.execute(course_name="Some Course")
@@ -204,11 +215,13 @@ class TestCourseOutlineTool:
         # Mock catalog with unsorted lessons
         mock_vector_store._resolve_course_name.return_value = "Test Course"
         mock_vector_store.course_catalog.get.return_value = {
-            'metadatas': [{
-                'course_link': 'https://example.com/course',
-                'instructor': 'Test Instructor',
-                'lessons_json': '[{"lesson_number": 2, "lesson_title": "Third Lesson"}, {"lesson_number": 0, "lesson_title": "First Lesson"}, {"lesson_number": 1, "lesson_title": "Second Lesson"}]'
-            }]
+            "metadatas": [
+                {
+                    "course_link": "https://example.com/course",
+                    "instructor": "Test Instructor",
+                    "lessons_json": '[{"lesson_number": 2, "lesson_title": "Third Lesson"}, {"lesson_number": 0, "lesson_title": "First Lesson"}, {"lesson_number": 1, "lesson_title": "Second Lesson"}]',
+                }
+            ]
         }
         tool = CourseOutlineTool(mock_vector_store)
 
@@ -272,9 +285,11 @@ class TestToolManager:
         sources = manager.get_last_sources()
 
         assert len(sources) == 3
-        assert all(hasattr(source, 'citation_number') for source in sources)
+        assert all(hasattr(source, "citation_number") for source in sources)
 
-    def test_sources_reset_after_retrieval(self, mock_vector_store, sample_search_results):
+    def test_sources_reset_after_retrieval(
+        self, mock_vector_store, sample_search_results
+    ):
         """Test that sources are reset after retrieval."""
         mock_vector_store.search.return_value = sample_search_results
         manager = ToolManager()

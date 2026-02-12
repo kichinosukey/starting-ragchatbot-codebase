@@ -1,4 +1,5 @@
 """Tests for ai_generator.py (AIGenerator)."""
+
 import pytest
 from unittest.mock import MagicMock, patch
 from ai_generator import AIGenerator
@@ -9,7 +10,7 @@ from vector_store import SearchResults
 class TestAIGenerator:
     """Tests for AIGenerator."""
 
-    @patch('ai_generator.anthropic.Anthropic')
+    @patch("ai_generator.anthropic.Anthropic")
     def test_initialization(self, mock_anthropic_class):
         """Test AIGenerator initialization."""
         mock_client = MagicMock()
@@ -21,7 +22,7 @@ class TestAIGenerator:
         assert generator.model == "claude-sonnet-4-20250514"
         mock_anthropic_class.assert_called_once_with(api_key="test_key")
 
-    @patch('ai_generator.anthropic.Anthropic')
+    @patch("ai_generator.anthropic.Anthropic")
     def test_generate_response_without_tools(self, mock_anthropic_class):
         """Test generate_response for a query that doesn't require tools."""
         mock_client = MagicMock()
@@ -42,8 +43,10 @@ class TestAIGenerator:
         assert result == "Machine learning is a subset of artificial intelligence."
         assert mock_client.messages.create.call_count == 1
 
-    @patch('ai_generator.anthropic.Anthropic')
-    def test_generate_response_with_tool_use(self, mock_anthropic_class, mock_vector_store, sample_search_results):
+    @patch("ai_generator.anthropic.Anthropic")
+    def test_generate_response_with_tool_use(
+        self, mock_anthropic_class, mock_vector_store, sample_search_results
+    ):
         """Test generate_response with tool calling."""
         mock_client = MagicMock()
         mock_anthropic_class.return_value = mock_client
@@ -61,7 +64,9 @@ class TestAIGenerator:
 
         # Mock second response with final answer
         final_text_block = MagicMock()
-        final_text_block.text = "Based on the search, RAG is Retrieval-Augmented Generation."
+        final_text_block.text = (
+            "Based on the search, RAG is Retrieval-Augmented Generation."
+        )
         second_response = MagicMock()
         second_response.content = [final_text_block]
         second_response.stop_reason = "end_turn"
@@ -79,14 +84,16 @@ class TestAIGenerator:
         result = generator.generate_response(
             "What is RAG?",
             tools=tool_manager.get_tool_definitions(),
-            tool_manager=tool_manager
+            tool_manager=tool_manager,
         )
 
         assert result == "Based on the search, RAG is Retrieval-Augmented Generation."
         assert mock_client.messages.create.call_count == 2
 
-    @patch('ai_generator.anthropic.Anthropic')
-    def test_tool_execution_error_handling(self, mock_anthropic_class, mock_vector_store):
+    @patch("ai_generator.anthropic.Anthropic")
+    def test_tool_execution_error_handling(
+        self, mock_anthropic_class, mock_vector_store
+    ):
         """Test that tool execution errors are handled gracefully."""
         mock_client = MagicMock()
         mock_anthropic_class.return_value = mock_client
@@ -123,7 +130,7 @@ class TestAIGenerator:
         result = generator.generate_response(
             "What is RAG?",
             tools=tool_manager.get_tool_definitions(),
-            tool_manager=tool_manager
+            tool_manager=tool_manager,
         )
 
         assert isinstance(result, str)
@@ -131,4 +138,7 @@ class TestAIGenerator:
         second_call = mock_client.messages.create.call_args_list[1]
         messages = second_call[1]["messages"]
         tool_result_content = messages[-1]["content"][0]["content"]
-        assert "Tool execution error" in tool_result_content or "Search tool error" in tool_result_content
+        assert (
+            "Tool execution error" in tool_result_content
+            or "Search tool error" in tool_result_content
+        )
