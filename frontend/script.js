@@ -5,7 +5,7 @@ const API_URL = '/api';
 let currentSessionId = null;
 
 // DOM elements
-let chatMessages, chatInput, sendButton, totalCourses, courseTitles;
+let chatMessages, chatInput, sendButton, totalCourses, courseTitles, newChatButton;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,7 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     sendButton = document.getElementById('sendButton');
     totalCourses = document.getElementById('totalCourses');
     courseTitles = document.getElementById('courseTitles');
-    
+    newChatButton = document.getElementById('newChatButton');
+
     setupEventListeners();
     createNewSession();
     loadCourseStats();
@@ -28,8 +29,10 @@ function setupEventListeners() {
     chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
-    
-    
+
+    // New chat button
+    newChatButton.addEventListener('click', handleNewChat);
+
     // Suggested questions
     document.querySelectorAll('.suggested-item').forEach(button => {
         button.addEventListener('click', (e) => {
@@ -50,6 +53,7 @@ async function sendMessage() {
     chatInput.value = '';
     chatInput.disabled = true;
     sendButton.disabled = true;
+    newChatButton.disabled = true;
 
     // Add user message
     addMessage(query, 'user');
@@ -71,7 +75,10 @@ async function sendMessage() {
             })
         });
 
-        if (!response.ok) throw new Error('Query failed');
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+            throw new Error(`Query failed: ${errorData.detail || response.statusText}`);
+        }
 
         const data = await response.json();
         
@@ -91,6 +98,7 @@ async function sendMessage() {
     } finally {
         chatInput.disabled = false;
         sendButton.disabled = false;
+        newChatButton.disabled = false;
         chatInput.focus();
     }
 }
@@ -115,26 +123,103 @@ function addMessage(content, type, sources = null, isWelcome = false) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${type}${isWelcome ? ' welcome-message' : ''}`;
     messageDiv.id = `message-${messageId}`;
-    
+
     // Convert markdown to HTML for assistant messages
-    const displayContent = type === 'assistant' ? marked.parse(content) : escapeHtml(content);
-    
-    let html = `<div class="message-content">${displayContent}</div>`;
-    
+    let displayContent = type === 'assistant' ? marked.parse(content) : escapeHtml(content);
+
+    // Process citation markers to make them clickable
     if (sources && sources.length > 0) {
-        html += `
-            <details class="sources-collapsible">
-                <summary class="sources-header">Sources</summary>
-                <div class="sources-content">${sources.join(', ')}</div>
-            </details>
-        `;
+        displayContent = makeCitationsClickable(displayContent, messageId);
     }
-    
+
+    let html = `<div class="message-content">${displayContent}</div>`;
+
+    if (sources && sources.length > 0) {
+        html += renderSourceCards(sources, messageId);
+    }
+
     messageDiv.innerHTML = html;
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    
+
     return messageId;
+}
+
+function makeCitationsClickable(content, messageId) {
+    // Replace citation markers [1], [2], etc. with clickable links
+    return content.replace(/\[(\d+)\]/g, (match, num) => {
+        return `<a href="#source-${messageId}-${num}" class="citation-link" onclick="scrollToSource(event, '${messageId}', '${num}')">[${num}]</a>`;
+    });
+}
+
+function renderSourceCards(sources, messageId) {
+    const sourcesHtml = sources.map((source, index) => {
+        const num = index + 1;
+        let cardHtml = `
+            <div class="source-card" id="source-${messageId}-${num}">
+                <div class="source-number">[${num}]</div>
+                <div class="source-details">
+                    <div class="source-course">
+        `;
+
+        // Course title with link if available
+        if (source.course_link) {
+            cardHtml += `<a href="${escapeHtml(source.course_link)}" target="_blank" rel="noopener noreferrer" class="source-link">${escapeHtml(source.course_title)}</a>`;
+        } else {
+            cardHtml += escapeHtml(source.course_title);
+        }
+
+        cardHtml += `</div>`;
+
+        // Lesson information if available
+        if (source.lesson_number !== null && source.lesson_number !== undefined) {
+            cardHtml += `<div class="source-lesson">`;
+
+            if (source.lesson_link) {
+                cardHtml += `Lesson ${source.lesson_number}`;
+                if (source.lesson_title) {
+                    cardHtml += `: <a href="${escapeHtml(source.lesson_link)}" target="_blank" rel="noopener noreferrer" class="source-link">${escapeHtml(source.lesson_title)}</a>`;
+                } else {
+                    cardHtml += ` - <a href="${escapeHtml(source.lesson_link)}" target="_blank" rel="noopener noreferrer" class="source-link">View Lesson</a>`;
+                }
+            } else {
+                cardHtml += `Lesson ${source.lesson_number}`;
+                if (source.lesson_title) {
+                    cardHtml += `: ${escapeHtml(source.lesson_title)}`;
+                }
+            }
+
+            cardHtml += `</div>`;
+        }
+
+        cardHtml += `
+                </div>
+            </div>
+        `;
+
+        return cardHtml;
+    }).join('');
+
+    return `
+        <details class="sources-collapsible" open>
+            <summary class="sources-header">Sources (${sources.length})</summary>
+            <div class="sources-cards">
+                ${sourcesHtml}
+            </div>
+        </details>
+    `;
+}
+
+// Scroll to source card when citation is clicked
+function scrollToSource(event, messageId, sourceNum) {
+    event.preventDefault();
+    const sourceCard = document.getElementById(`source-${messageId}-${sourceNum}`);
+    if (sourceCard) {
+        sourceCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // Add highlight animation
+        sourceCard.classList.add('highlight');
+        setTimeout(() => sourceCard.classList.remove('highlight'), 2000);
+    }
 }
 
 // Helper function to escape HTML for user messages
@@ -150,6 +235,31 @@ async function createNewSession() {
     currentSessionId = null;
     chatMessages.innerHTML = '';
     addMessage('Welcome to the Course Materials Assistant! I can help you with questions about courses, lessons and specific content. What would you like to know?', 'assistant', null, true);
+}
+
+function handleNewChat() {
+    // クエリ実行中は新規チャット開始を許可しない
+    if (chatInput.disabled) {
+        return;
+    }
+
+    // 会話履歴が存在する場合は確認ダイアログを表示
+    const hasMessages = chatMessages.children.length > 1; // ウェルカムメッセージ以外のメッセージが存在
+    if (hasMessages) {
+        const confirmed = confirm('新しい会話を開始しますか？現在のチャット履歴はクリアされます。');
+        if (!confirmed) {
+            return;
+        }
+    }
+
+    // セッションをクリア
+    createNewSession();
+
+    // 入力欄にフォーカス
+    chatInput.focus();
+
+    // チャットを最上部にスクロール
+    chatMessages.scrollTop = 0;
 }
 
 // Load course statistics

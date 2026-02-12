@@ -1,6 +1,15 @@
 from typing import List, Dict, Optional
 from pydantic import BaseModel
 
+class Source(BaseModel):
+    """Represents a source citation with metadata"""
+    course_title: str
+    course_link: Optional[str] = None
+    lesson_number: Optional[int] = None
+    lesson_title: Optional[str] = None
+    lesson_link: Optional[str] = None
+    citation_number: Optional[int] = None  # For inline citation markers
+
 class Lesson(BaseModel):
     """Represents a lesson within a course"""
     lesson_number: int  # Sequential lesson number (1, 2, 3, etc.)
